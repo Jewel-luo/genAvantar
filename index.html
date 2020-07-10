@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+        <meta content="yes" name="apple-mobile-web-app-capable">
+        <meta content="yes" name="apple-touch-fullscreen">
+        <meta content="black" name="apple-mobile-web-app-status-bar-style">
+        <meta content="telephone=no,email=no" name="format-detection">
+        <link rel="apple-touch-icon" href="favicon.png">
+        <link rel="Shortcut Icon" href="favicon.png" type="image/x-icon">
+        <title>随id生成像素头像</title>
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+        <style>
+
+        </style>
+    </head>
+    <body>
+        <h1>随id生成像素头像</h1>
+        <script type="text/javascript" src="./jquery.min.js"></script>
+        <script type="text/javascript">
+            //生成头像
+            function genAvantar(id) {
+                //初始化宽高
+                var width = 20,
+                        grid = 5,
+                        padding = width / 2,
+                        size = width * grid + width;
+                var canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                document.getElementsByTagName('body')[0].appendChild(canvas);
+                var ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'rgb(240,240,240)';
+                ctx.fillRect(0, 0, size, size);
+                //设置随机颜色
+                ctx.fillStyle = 'rgb(' + randomColor(80, 200) + ')';
+                var hash = (id+'').hashCode()^(id + 'identicon' + id).hashCode();
+                hash = hash.toString(10);
+                hash = strToUtf8Bytes(hash);
+                var len = hash.length;
+                for (var i = 0; i < Math.ceil(grid / 2); i++) {
+                    for (var j = 0; j < grid; j++) {
+                        if (hash[--len] < 53) {
+                            ctx.fillRect((padding + i * width), (padding + j * width), width, width);
+                            //绘制对称另一半
+                            if (i < Math.floor(grid / 2)) {
+                                ctx.fillRect((padding + ((grid - 1) - i) * width), (padding + j * width), width, width);
+                            }
+                        }
+                    }
+                }
+            }
+            //生成随机颜色
+            function randomColor(c1, c2) {
+                if (c1 > 255) {
+                    c1 = 255;
+                }
+                if (c2 > 255) {
+                    c2 = 255;
+                }
+                var r = Math.ceil(Math.random() * (c2 - c1)) + c1;
+                var g = Math.ceil(Math.random() * (c2 - c1)) + c1;
+                var b = Math.ceil(Math.random() * (c2 - c1)) + c1;
+                return r + ',' + g + ',' + b;
+            }
+            //返回utf8编码
+            function strToUtf8Bytes(str) {
+                const utf8 = [];
+                for (let i = 0; i < str.length; i++) {
+                    let charCode = str.charCodeAt(i);
+                    if (charCode < 0x80) {
+                        utf8.push(charCode);
+                    } else if (charCode < 0x800) {
+                        utf8.push(0xc0 | (charCode >> 6), 0x80 | (charCode & 0x3f));
+                    } else if (charCode < 0xd800 || charCode >= 0xe000) {
+                        utf8.push(0xe0 | (charCode >> 12), 0x80 | ((charCode >> 6) & 0x3f), 0x80 | (charCode & 0x3f));
+                    } else {
+                        i++;
+                        // Surrogate pair:
+                        // UTF-16 encodes 0x10000-0x10FFFF by subtracting 0x10000 and
+                        // splitting the 20 bits of 0x0-0xFFFFF into two halves
+                        charCode = 0x10000 + (((charCode & 0x3ff) << 10) | (str.charCodeAt(i) & 0x3ff));
+                        utf8.push(
+                                0xf0 | (charCode >> 18),
+                                0x80 | ((charCode >> 12) & 0x3f),
+                                0x80 | ((charCode >> 6) & 0x3f),
+                                0x80 | (charCode & 0x3f),
+                                );
+                    }
+                }
+                //兼容汉字，ASCII码表最大的值为127，大于127的值为特殊字符
+                for (let j = 0; j < utf8.length; j++) {
+                    var code = utf8[j];
+                    if (code > 127) {
+                        utf8[j] = code - 256;
+                    }
+                }
+                return utf8;
+            }
+            //返回hash值
+            String.prototype.hashCode = function () {
+                var hash = 0, i, chr;
+                if (this.length === 0)
+                    return hash;
+                for (i = 0; i < this.length; i++) {
+                    chr = this.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + chr;
+                    hash |= 0; // Convert to 32bit integer
+                }
+                return hash;
+            };
+            genAvantar(2);
+        </script>
+    </body>
+</html>
